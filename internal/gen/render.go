@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2025 Mikhail Knyazhev <markus621@yandex.com>. All rights reserved.
+ *  Copyright (c) 2025-2026 Mikhail Knyazhev <markus621@yandex.com>. All rights reserved.
  *  Use of this source code is governed by a BSD 3-Clause license that can be found in the LICENSE file.
  */
 
@@ -51,6 +51,9 @@ func drawList(w io.Writer, list []types.Token, line bool) error {
 			return err
 		}
 		if i >= count {
+			continue
+		}
+		if _, ok := token.(NoSpace); ok {
 			continue
 		}
 		if _, err := io.WriteString(w, " "); err != nil {
