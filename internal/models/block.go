@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2025 Mikhail Knyazhev <markus621@yandex.com>. All rights reserved.
+ *  Copyright (c) 2025-2026 Mikhail Knyazhev <markus621@yandex.com>. All rights reserved.
  *  Use of this source code is governed by a BSD 3-Clause license that can be found in the LICENSE file.
  */
 
@@ -18,7 +18,10 @@ type Block struct {
 
 func (v *Block) Render(w io.Writer) error {
 	out := make([]any, 0)
-	out = append(out, "{\n")
+	out = append(out, "{")
+	if len(v.D) > 0 {
+		out = append(out, "\n")
+	}
 	for _, token := range v.D {
 		out = append(out, token)
 	}
@@ -26,12 +29,12 @@ func (v *Block) Render(w io.Writer) error {
 	return gen.Render(w, out...)
 }
 
-type Params struct {
+type Bracket struct {
 	D     []types.Token
 	Brace bool
 }
 
-func (v *Params) Render(w io.Writer) error {
+func (v *Bracket) Render(w io.Writer) error {
 	count := len(v.D) - 1
 	out := make([]any, 0, count*2+2)
 	if v.Brace {
