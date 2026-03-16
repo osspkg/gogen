@@ -6,6 +6,7 @@
 package models
 
 import (
+	"fmt"
 	"io"
 
 	"go.osspkg.com/gogen/internal/gen"
@@ -21,12 +22,16 @@ func (v *Letter) Render(w io.Writer) error {
 }
 
 type Raw struct {
-	D  string
-	T  types.Token
-	AT []types.Token
+	D      string
+	T      types.Token
+	AT     []types.Token
+	Verify bool
 }
 
 func (v *Raw) Render(w io.Writer) error {
+	if v.Verify && !rexLetter.MatchString(v.D) {
+		return fmt.Errorf("invalid letter: %s", v.D)
+	}
 	if err := gen.Render(w, v.D); err != nil {
 		return err
 	}

@@ -25,7 +25,7 @@ func (v *Tokens) Pkg(arg string) *Tokens {
 	if len(arg) == 0 {
 		return v
 	}
-	*v = append(*v, &models.Keyword{D: arg, Verify: true})
+	*v = append(*v, &models.Raw{D: arg, Verify: true})
 	return v.Op(".")
 }
 
