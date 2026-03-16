@@ -22,7 +22,10 @@ func ID(arg string) *Tokens {
 }
 
 func (v *Tokens) Pkg(arg string) *Tokens {
-	*v = append(*v, &models.Keyword{D: arg, Verify: true})
+	if len(arg) == 0 {
+		return v
+	}
+	*v = append(*v, &models.Raw{D: arg, Verify: true})
 	return v.Op(".")
 }
 
