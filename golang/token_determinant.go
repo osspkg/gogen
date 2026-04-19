@@ -56,6 +56,10 @@ func (v *Tokens) Const() *Tokens {
 	return v
 }
 
+func Const() *Tokens {
+	return create().Const()
+}
+
 func (v *Tokens) List(args ...types.Token) *Tokens {
 	*v = append(*v, &models.Bracket{D: args, Brace: false})
 	return v
