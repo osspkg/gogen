@@ -15,6 +15,7 @@ import (
 
 type Keyword struct {
 	Verify bool
+	Raw    bool
 	D      string
 }
 
@@ -24,5 +25,17 @@ func (v *Keyword) Render(w io.Writer) error {
 	if v.Verify && !rexLetter.MatchString(v.D) {
 		return fmt.Errorf("invalid letter: %s", v.D)
 	}
+	if v.Raw {
+		return gen.WriteVerbatim(w, v.D)
+	}
 	return gen.Render(w, v.D)
+}
+
+func (v *Keyword) RenderLayout() gen.Layout {
+	kind := gen.KindWord
+	if v.Raw {
+		kind = gen.KindFragment
+	}
+	style := gen.Style{Kind: kind, Text: v.D}
+	return gen.Layout{First: style, Last: style}
 }

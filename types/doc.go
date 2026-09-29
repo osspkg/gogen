@@ -3,12 +3,5 @@
  *  Use of this source code is governed by a BSD 3-Clause license that can be found in the LICENSE file.
  */
 
+// Package types defines the public interfaces used by gogen tokens.
 package types
-
-import "io"
-
-// Token is a value that can render Go source to a writer.
-type Token interface {
-	// Render writes the token's Go source to w and returns any write or render error.
-	Render(w io.Writer) error
-}

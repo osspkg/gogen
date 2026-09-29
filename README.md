@@ -1,18 +1,12 @@
 # gogen
 
-`gogen` is a Go library for building Go source code from composable tokens. Its fluent API covers common declarations, types, expressions, comments, and control-flow blocks. The generated source is formatted with `go/format` by default.
+[![Go Version](https://img.shields.io/github/go-mod/go-version/osspkg/gogen)](https://go.dev/) [![License](https://img.shields.io/github/license/osspkg/gogen)](LICENSE) [![CI](https://img.shields.io/github/actions/workflow/status/osspkg/gogen/ci.yml?branch=master&label=CI)](https://github.com/osspkg/gogen/actions/workflows/ci.yml) [![Go Reference](https://pkg.go.dev/badge/go.osspkg.com/gogen/golang.svg)](https://pkg.go.dev/go.osspkg.com/gogen/golang)
 
-The module requires **Go 1.26 or newer**.
+`gogen` is a Go library for building Go source from composable tokens. Its fluent API covers declarations, types, expressions, comments, and control flow; generated source is formatted with `go/format` by default.
 
-## Installation
+## Demo
 
-From your Go module root, add the public builder package:
-
-```sh
-go get go.osspkg.com/gogen/golang
-```
-
-## Quick start
+This program generates a Go file and prints the formatted source:
 
 ```go
 package main
@@ -25,8 +19,6 @@ import (
 )
 
 func main() {
-	var source bytes.Buffer
-
 	file := gogen.Package("main").
 		Import("fmt", "fmt").
 		Join(
@@ -35,15 +27,15 @@ func main() {
 			),
 		)
 
+	var source bytes.Buffer
 	if err := gogen.Render(&source, file); err != nil {
 		panic(err)
 	}
-
 	fmt.Print(source.String())
 }
 ```
 
-The program writes formatted Go source to `source`, equivalent to:
+Output:
 
 ```go
 package main
@@ -55,48 +47,59 @@ func main() {
 }
 ```
 
-Imports are explicit: add them with `Import`; package-qualified identifiers can be built with `Pkg`.
+## Getting started
 
-## Building tokens
+The module requires Go 1.26 or newer. Add the builder package from your module root:
 
-Every constructor returns a `*Tokens` value. Chain methods to extend it, or combine token values with `Join`:
+```sh
+go get go.osspkg.com/gogen/golang
+```
+
+## Features and API
+
+Each package-level constructor starts a `*Tokens` sequence. Methods with the same names append to an existing sequence, so builders can be chained. `Join` combines token sequences.
+
+| Area | Methods and constructors | Use |
+| --- | --- | --- |
+| File declarations | `Package`, `Import`, `ImportBlock` | Start a file and add one import or a grouped import declaration. |
+| Type declarations | `Type`, `TypeBlock`, `Struct`, `Interface`, `Field` | Declare named or grouped types, define struct/interface bodies, and add named struct fields. |
+| Variables and constants | `Var`, `Const` | Start variable and constant declarations. |
+| Functions and calls | `Func`, `Params`, `Bracket`, `Call`, `Return`, `Defer`, `Go` | Build function declarations, parameter lists, calls, and common function statements. |
+| Control flow | `If`, `Else`, `ElseIf`, `For`, `Range`, `Switch`, `Select`, `Case`, `Default`, `Break`, `Continue`, `Fallthrough`, `Goto` | Compose conditional statements, loops, and switch/select clauses. |
+| Expressions | `ID`, `Pkg`, `Op`, `Raw`, `Text`, `Index`, `TypeArgs`, `KeyValue`, `List`, `New`, `Make`, `Append` | Build identifiers, package selectors, operators, literals, indexing, generic arguments, and common built-in calls. |
+| Types | `Any`, `Nil`, `Chan`, `Map`, `Slice`, `Array`, `Bool`, `Byte`, `Rune`, `String`, `Error`, `Int`, `Int8`, `Int16`, `Int32`, `Int64`, `Uint`, `Uint8`, `Uint16`, `Uint32`, `Uint64`, `Uintptr`, `Float32`, `Float64`, `Complex64`, `Complex128` | Add predeclared Go types and map/slice/array type syntax. |
+| Layout and rendering | `Block`, `Comment`, `Line`, `Tokens.Render`, `Tokens.Unwrap`, `Tokens.Join`, `Render`, `SetRawMode`, `SetDefaultMode` | Add blocks and comments, inspect token output, combine tokens, and choose formatted or raw output. |
+| Custom tokens | `types.Token` | Implement `Render(io.Writer) error` to add a token renderer. |
+
+`Field` takes struct-tag key/value pairs and quotes the values for Go source:
 
 ```go
-statement := gogen.Var().ID("count").Op("=").Raw("1")
+user := gogen.Struct().Block(
+	gogen.Field("ID", gogen.Uint64(), "json", "id,omitempty", "db", "user_id"),
+	gogen.Field("Name", gogen.String(), "json", "name"),
+)
 ```
 
-Common constructors include:
+The example renders as:
 
-- **Declarations and types:** `Package`, `Import`, `Func`, `Type`, `Var`, `Const`, `Struct`, `Interface`, `Map`, `Slice`, and `Array`.
-- **Expressions:** `ID`, `Pkg`, `Text`, `Raw`, `Op`, `Call`, `Params`, `New`, `Make`, and `Append`.
-- **Statements and blocks:** `If`, `For`, `Range`, `Switch`, `Select`, `Case`, `Return`, and `Block`.
-- **Formatting:** `Comment` and `Line`.
-
-`Text` quotes its argument as a Go string literal. `ID` checks identifier text, and `Op` accepts operators supported by the Go builder. `Raw` inserts text directly. The public `types.Token` interface (`Render(io.Writer) error`) can be implemented to add custom tokens.
-
-## Rendering
-
-`golang.Render(w, token)` renders a token to an `io.Writer` and formats the result using `go/format`. Formatting also reports Go syntax errors in the generated source. It does not type-check or compile the generated program.
-
-For unformatted output, call `SetRawMode()`. Call `SetDefaultMode()` to restore formatting. These functions switch a package-wide mode that applies to subsequent renders.
-
-## Development
-
-The repository's Makefile wraps its checks with `goppy`. Run commands from the repository root:
-
-```sh
-make tests
-make lint
-make build
+```go
+struct {
+	ID uint64 `json:"id,omitempty" db:"user_id"`
+	Name string `json:"name"`
+}
 ```
 
-The workflow used by GitHub Actions is:
+Tag arguments must be key/value pairs; rendering returns an error when the argument count is odd. `Text` quotes a Go string literal. `Raw` inserts source text verbatim. `ID` validates identifier text and `Op` rejects unsupported operators during rendering.
 
-```sh
-make ci
-```
+`Tokens.Render(w)` writes readable token layout before formatting. `golang.Render(w, token)` applies `go/format` by default and returns syntax errors when the generated source is invalid; it does not type-check the program. `SetRawMode` and `SetDefaultMode` switch package-wide behavior for subsequent `Render` calls.
 
-`make ci` includes license, lint, test, and build steps. It also installs the latest `goppy` command and runs `goppy setup-lib`, so it may require network access and affect local setup. The CI workflow currently uses Go 1.26.
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for prerequisites and local checks.
+
+## Contributors
+
+[![Contributors](https://img.shields.io/github/contributors/osspkg/gogen)](https://github.com/osspkg/gogen/graphs/contributors)
 
 ## License
 

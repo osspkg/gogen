@@ -11,6 +11,41 @@ type Unwrap interface {
 	Unwrap() []types.Token
 }
 
-type NoSpace interface {
-	NoSpace()
+type Kind uint8
+
+const (
+	KindUnknown Kind = iota
+	KindWord
+	KindLiteral
+	KindFragment
+	KindTypePrefix
+	KindCloseBracket
+	KindOperator
+	KindPrefixOperator
+	KindPostfixOperator
+	KindDot
+	KindComma
+	KindColon
+	KindSemicolon
+	KindOpenParen
+	KindCloseParen
+	KindOpenSquare
+	KindBlockOpen
+	KindBlockClose
+	KindLine
+	KindComment
+)
+
+type Style struct {
+	Kind Kind
+	Text string
+}
+
+type Layout struct {
+	First Style
+	Last  Style
+}
+
+type Styled interface {
+	RenderLayout() Layout
 }

@@ -19,3 +19,8 @@ type Text struct {
 func (v *Text) Render(w io.Writer) error {
 	return gen.Render(w, strconv.Quote(v.D))
 }
+
+func (v *Text) RenderLayout() gen.Layout {
+	style := gen.Style{Kind: gen.KindLiteral, Text: v.D}
+	return gen.Layout{First: style, Last: style}
+}

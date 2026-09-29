@@ -1,6 +1,6 @@
 /*
  *  Copyright (c) 2025-2026 Mikhail Knyazhev <markus621@yandex.com>. All rights reserved.
- *  Use of this source code is governed by a BSD 3-Clause license that can be found in the LICENSE file.
+ *  Use of this source code is governed by the BSD 3-Clause license that can be found in the LICENSE file.
  */
 
 package gen
@@ -8,6 +8,7 @@ package gen
 import (
 	"fmt"
 	"io"
+	"strings"
 
 	"go.osspkg.com/gogen/types"
 )
@@ -21,58 +22,181 @@ func Render(w io.Writer, args ...any) error {
 	return nil
 }
 
-func drawAny(w io.Writer, t any) error {
-	if v, ok := t.(Unwrap); ok {
-		return drawList(w, v.Unwrap(), true)
-	} else if v, ok := t.([]types.Token); ok {
-		return drawList(w, v, false)
-	} else if v, ok := t.(types.Token); ok {
-		return v.Render(w)
-	} else if v, ok := t.(string); ok {
-		_, err := io.WriteString(w, v)
-		return err
-	} else {
-		fmt.Printf("[X] %T\n", t)
+func drawAny(w io.Writer, arg any) error {
+	switch v := arg.(type) {
+	case Unwrap:
+		return drawList(w, v.Unwrap())
+	case []types.Token:
+		return drawList(w, v)
+	case types.Token:
+		return drawList(w, []types.Token{v})
+	case string:
+		n, err := io.WriteString(w, v)
+		if err != nil {
+			return err
+		}
+		if n != len(v) {
+			return io.ErrShortWrite
+		}
+		return nil
+	default:
+		fmt.Printf("[X] %T\n", arg)
+		return nil
 	}
-	return nil
 }
 
-func drawList(w io.Writer, list []types.Token, line bool) error {
-	count := len(list) - 1
-	for i, token := range list {
-		if vt, ok := token.(Unwrap); ok {
-			if err := drawList(w, vt.Unwrap(), true); err != nil {
-				return err
+func drawList(w io.Writer, list []types.Token) error {
+	list = flatten(list)
+
+	var (
+		previous Style
+		havePrev bool
+	)
+	for _, token := range list {
+		layout := layoutOf(token)
+		first := layout.First
+		if first.Kind == KindOperator && isPrefixOperator(first.Text) && (!havePrev || !canEndExpression(previous)) {
+			first.Kind = KindPrefixOperator
+			layout.First.Kind = KindPrefixOperator
+			if layout.Last.Kind == KindOperator && layout.Last.Text == first.Text {
+				layout.Last.Kind = KindPrefixOperator
 			}
-			continue
 		}
 
+		if havePrev {
+			if _, err := io.WriteString(w, separator(previous, first)); err != nil {
+				return err
+			}
+		}
 		if err := token.Render(w); err != nil {
 			return err
 		}
-		if i >= count {
-			continue
-		}
-		if _, ok := token.(NoSpace); ok {
-			continue
-		}
-		if _, err := io.WriteString(w, " "); err != nil {
-			return err
-		}
-	}
-	if line {
-		if _, err := io.WriteString(w, "\n"); err != nil {
-			return err
-		}
+		previous = layout.Last
+		havePrev = previous.Kind != KindLine
 	}
 	return nil
 }
 
-func Params(token types.Token) (out []types.Token) {
-	if unw, ok := token.(Unwrap); ok {
-		out = append(out, unw.Unwrap()...)
-	} else {
+func flatten(in []types.Token) []types.Token {
+	out := make([]types.Token, 0, len(in))
+	for _, token := range in {
+		if nested, ok := token.(Unwrap); ok {
+			out = append(out, flatten(nested.Unwrap())...)
+			continue
+		}
 		out = append(out, token)
 	}
-	return
+	return out
+}
+
+func layoutOf(token types.Token) Layout {
+	if styled, ok := token.(Styled); ok {
+		return styled.RenderLayout()
+	}
+	unknown := Style{Kind: KindUnknown}
+	return Layout{First: unknown, Last: unknown}
+}
+
+func separator(previous, next Style) string {
+	if previous.Kind == KindLine || next.Kind == KindLine || previous.Kind == KindComment {
+		return ""
+	}
+	if next.Kind == KindComma || next.Kind == KindDot || next.Kind == KindColon || next.Kind == KindSemicolon || next.Kind == KindCloseParen || next.Kind == KindCloseBracket {
+		return ""
+	}
+	if previous.Kind == KindDot || previous.Kind == KindOpenParen || previous.Kind == KindOpenSquare || previous.Kind == KindTypePrefix || previous.Kind == KindCloseBracket {
+		return ""
+	}
+	if next.Kind == KindOpenParen || next.Kind == KindOpenSquare {
+		return ""
+	}
+	if next.Kind == KindBlockOpen {
+		return " "
+	}
+	if previous.Kind == KindBlockOpen {
+		return ""
+	}
+	if previous.Kind == KindComma || previous.Kind == KindColon || previous.Kind == KindOperator {
+		return " "
+	}
+	if previous.Kind == KindPrefixOperator || previous.Kind == KindPostfixOperator {
+		return ""
+	}
+	if next.Kind == KindOperator {
+		if isPrefixOperator(next.Text) && !canEndExpression(previous) {
+			return wordLike(previous)
+		}
+		if next.Text == "++" || next.Text == "--" {
+			return ""
+		}
+		return " "
+	}
+	if next.Kind == KindPrefixOperator || next.Kind == KindPostfixOperator {
+		return ""
+	}
+	if previous.Kind == KindCloseParen || previous.Kind == KindCloseBracket || previous.Kind == KindBlockClose {
+		return " "
+	}
+	if wordLikeKind(previous.Kind) && wordLikeKind(next.Kind) {
+		return " "
+	}
+	if next.Kind == KindSemicolon || previous.Kind == KindSemicolon {
+		return " "
+	}
+	return " "
+}
+
+func wordLike(style Style) string {
+	if wordLikeKind(style.Kind) {
+		return " "
+	}
+	return ""
+}
+
+func wordLikeKind(kind Kind) bool {
+	return kind == KindWord || kind == KindLiteral || kind == KindUnknown
+}
+
+func canEndExpression(style Style) bool {
+	switch style.Kind {
+	case KindWord:
+		switch strings.TrimSpace(style.Text) {
+		case "break", "case", "const", "continue", "defer", "else", "fallthrough", "for", "func", "go", "goto", "if", "import", "package", "return", "select", "switch", "type", "var":
+			return false
+		default:
+			return true
+		}
+	case KindLiteral, KindFragment, KindTypePrefix, KindCloseBracket, KindCloseParen, KindBlockClose, KindPostfixOperator:
+		return true
+	default:
+		return false
+	}
+}
+
+func isPrefixOperator(op string) bool {
+	switch op {
+	case "+", "-", "*", "&", "!", "^", "~", "<-":
+		return true
+	default:
+		return false
+	}
+}
+
+// LayoutOf returns the outer token styles of a token sequence after unwrapping
+// nested token builders.
+func LayoutOf(tokens []types.Token) Layout {
+	flat := flatten(tokens)
+	if len(flat) == 0 {
+		return Layout{}
+	}
+	first := layoutOf(flat[0])
+	last := layoutOf(flat[len(flat)-1])
+	return Layout{First: first.First, Last: last.Last}
+}
+
+func Params(token types.Token) []types.Token {
+	if nested, ok := token.(Unwrap); ok {
+		return nested.Unwrap()
+	}
+	return []types.Token{token}
 }

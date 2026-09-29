@@ -17,16 +17,41 @@ type Block struct {
 }
 
 func (v *Block) Render(w io.Writer) error {
-	out := make([]any, 0)
-	out = append(out, "{")
-	if len(v.D) > 0 {
-		out = append(out, "\n")
+	iw := gen.Indented(w)
+	if len(v.D) == 0 {
+		return gen.Render(iw, []types.Token{
+			gen.Symbol("{", gen.Style{Kind: gen.KindBlockOpen}),
+			gen.Symbol("}", gen.Style{Kind: gen.KindBlockClose}),
+		})
 	}
+
+	if err := gen.Render(iw, gen.Symbol("{", gen.Style{Kind: gen.KindBlockOpen})); err != nil {
+		return err
+	}
+	iw.Push()
 	for _, token := range v.D {
-		out = append(out, token)
+		if err := iw.EnsureNewline(); err != nil {
+			iw.Pop()
+			return err
+		}
+		if err := gen.Render(iw, token); err != nil {
+			iw.Pop()
+			return err
+		}
 	}
-	out = append(out, "}")
-	return gen.Render(w, out...)
+	if err := iw.EnsureNewline(); err != nil {
+		iw.Pop()
+		return err
+	}
+	iw.Pop()
+	return gen.Render(iw, gen.Symbol("}", gen.Style{Kind: gen.KindBlockClose}))
+}
+
+func (v *Block) RenderLayout() gen.Layout {
+	return gen.Layout{
+		First: gen.Style{Kind: gen.KindBlockOpen},
+		Last:  gen.Style{Kind: gen.KindBlockClose},
+	}
 }
 
 type Bracket struct {
@@ -35,19 +60,28 @@ type Bracket struct {
 }
 
 func (v *Bracket) Render(w io.Writer) error {
-	count := len(v.D) - 1
-	out := make([]any, 0, count*2+2)
+	out := make([]types.Token, 0, len(v.D)*2+2)
 	if v.Brace {
-		out = append(out, "(")
+		out = append(out, gen.Symbol("(", gen.Style{Kind: gen.KindOpenParen}))
 	}
 	for i, token := range v.D {
-		out = append(out, gen.Params(token))
-		if i < count {
-			out = append(out, ", ")
+		if i > 0 {
+			out = append(out, gen.Symbol(",", gen.Style{Kind: gen.KindComma}))
 		}
+		out = append(out, gen.Params(token)...)
 	}
 	if v.Brace {
-		out = append(out, ")")
+		out = append(out, gen.Symbol(")", gen.Style{Kind: gen.KindCloseParen}))
 	}
-	return gen.Render(w, out...)
+	return gen.Render(w, out)
+}
+
+func (v *Bracket) RenderLayout() gen.Layout {
+	if v.Brace {
+		return gen.Layout{
+			First: gen.Style{Kind: gen.KindOpenParen},
+			Last:  gen.Style{Kind: gen.KindCloseParen},
+		}
+	}
+	return gen.Layout{}
 }

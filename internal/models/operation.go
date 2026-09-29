@@ -25,4 +25,31 @@ func (v *Operation[C]) Render(w io.Writer) error {
 	return gen.Render(w, v.D)
 }
 
-func (v *Operation[C]) NoSpace() {}
+func (v *Operation[C]) RenderLayout() gen.Layout {
+	style := gen.Style{Kind: gen.KindOperator, Text: v.D}
+	switch v.D {
+	case ".":
+		style.Kind = gen.KindDot
+	case ",":
+		style.Kind = gen.KindComma
+	case ":":
+		style.Kind = gen.KindColon
+	case ";":
+		style.Kind = gen.KindSemicolon
+	case "(":
+		style.Kind = gen.KindOpenParen
+	case ")":
+		style.Kind = gen.KindCloseParen
+	case "[":
+		style.Kind = gen.KindOpenSquare
+	case "]":
+		style.Kind = gen.KindCloseBracket
+	case "{":
+		style.Kind = gen.KindBlockOpen
+	case "}":
+		style.Kind = gen.KindBlockClose
+	case "++", "--", "...":
+		style.Kind = gen.KindPostfixOperator
+	}
+	return gen.Layout{First: style, Last: style}
+}

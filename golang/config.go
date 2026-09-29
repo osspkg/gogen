@@ -13,6 +13,7 @@ var _ cfg.Config = (*config)(nil)
 
 type config struct{}
 
+// OperationAvailable reports whether the builder supports op.
 func (c config) OperationAvailable(op string) bool {
 	switch op {
 	case "+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "&^", "+=", "-=", "*=", "/=", "%=",
@@ -24,6 +25,7 @@ func (c config) OperationAvailable(op string) bool {
 	}
 }
 
+// CommentSingle returns the delimiters used for line comments.
 func (config) CommentSingle() cfg.OpenClose {
 	return cfg.OpenClose{
 		Open:  "//",
@@ -31,6 +33,7 @@ func (config) CommentSingle() cfg.OpenClose {
 	}
 }
 
+// CommentMulti returns the delimiters used for block comments.
 func (config) CommentMulti() cfg.OpenClose {
 	return cfg.OpenClose{
 		Open:  "/*\n",
