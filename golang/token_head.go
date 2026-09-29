@@ -5,14 +5,12 @@
 
 package golang
 
-import "go.osspkg.com/gogen/internal/models"
-
 // Package appends a package declaration followed by a line break to the token sequence.
 func (v *Tokens) Package(arg string) *Tokens {
 	return v.Join(
 		create().Join(
-			&models.Keyword{D: "package"},
-			&models.Keyword{D: arg},
+			keyword("package"),
+			keyword(arg),
 		),
 	).Line()
 }
@@ -28,9 +26,9 @@ func Package(arg string) *Tokens {
 func (v *Tokens) Import(name, module string) *Tokens {
 	return v.Join(
 		create().Join(
-			&models.Keyword{D: "import"},
-			&models.Keyword{D: name, Verify: true},
-			&models.Text{D: module},
+			keyword("import"),
+			identifier(name),
+			textToken(module),
 		),
 	).Line()
 }

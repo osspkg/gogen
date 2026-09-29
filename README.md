@@ -2,7 +2,7 @@
 
 [![Go Version](https://img.shields.io/github/go-mod/go-version/osspkg/gogen)](https://go.dev/) [![License](https://img.shields.io/github/license/osspkg/gogen)](LICENSE) [![CI](https://img.shields.io/github/actions/workflow/status/osspkg/gogen/ci.yml?branch=master&label=CI)](https://github.com/osspkg/gogen/actions/workflows/ci.yml) [![Go Reference](https://pkg.go.dev/badge/go.osspkg.com/gogen/golang.svg)](https://pkg.go.dev/go.osspkg.com/gogen/golang)
 
-`gogen` is a Go library for building Go source from composable tokens. Its fluent API covers declarations, types, expressions, comments, and control flow; generated source is formatted with `go/format` by default.
+`gogen` is a token-based source generation library. Language packages provide their own fluent APIs and syntax policies, while shared internal renderers handle reusable token and layout behavior. The current public language adapter is `golang`, which formats generated source with `go/format` by default.
 
 ## Demo
 

@@ -21,6 +21,7 @@ const (
 	KindTypePrefix
 	KindCloseBracket
 	KindOperator
+	KindUnaryOperator
 	KindPrefixOperator
 	KindPostfixOperator
 	KindDot
@@ -37,8 +38,9 @@ const (
 )
 
 type Style struct {
-	Kind Kind
-	Text string
+	Kind             Kind
+	Text             string
+	CanEndExpression bool
 }
 
 type Layout struct {

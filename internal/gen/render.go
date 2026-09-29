@@ -8,7 +8,6 @@ package gen
 import (
 	"fmt"
 	"io"
-	"strings"
 
 	"go.osspkg.com/gogen/types"
 )
@@ -55,11 +54,19 @@ func drawList(w io.Writer, list []types.Token) error {
 	for _, token := range list {
 		layout := layoutOf(token)
 		first := layout.First
-		if first.Kind == KindOperator && isPrefixOperator(first.Text) && (!havePrev || !canEndExpression(previous)) {
-			first.Kind = KindPrefixOperator
-			layout.First.Kind = KindPrefixOperator
-			if layout.Last.Kind == KindOperator && layout.Last.Text == first.Text {
-				layout.Last.Kind = KindPrefixOperator
+		if first.Kind == KindUnaryOperator {
+			if !havePrev || !canEndExpression(previous) {
+				first.Kind = KindPrefixOperator
+				layout.First.Kind = KindPrefixOperator
+				if layout.Last.Kind == KindUnaryOperator {
+					layout.Last.Kind = KindPrefixOperator
+				}
+			} else {
+				first.Kind = KindOperator
+				layout.First.Kind = KindOperator
+				if layout.Last.Kind == KindUnaryOperator {
+					layout.Last.Kind = KindOperator
+				}
 			}
 		}
 
@@ -119,19 +126,19 @@ func separator(previous, next Style) string {
 	if previous.Kind == KindComma || previous.Kind == KindColon || previous.Kind == KindOperator {
 		return " "
 	}
-	if previous.Kind == KindPrefixOperator || previous.Kind == KindPostfixOperator {
+	if previous.Kind == KindPrefixOperator {
+		return ""
+	}
+	if previous.Kind == KindPostfixOperator {
 		return ""
 	}
 	if next.Kind == KindOperator {
-		if isPrefixOperator(next.Text) && !canEndExpression(previous) {
-			return wordLike(previous)
-		}
-		if next.Text == "++" || next.Text == "--" {
-			return ""
-		}
 		return " "
 	}
-	if next.Kind == KindPrefixOperator || next.Kind == KindPostfixOperator {
+	if next.Kind == KindPrefixOperator {
+		return wordLike(previous)
+	}
+	if next.Kind == KindPostfixOperator {
 		return ""
 	}
 	if previous.Kind == KindCloseParen || previous.Kind == KindCloseBracket || previous.Kind == KindBlockClose {
@@ -160,22 +167,8 @@ func wordLikeKind(kind Kind) bool {
 func canEndExpression(style Style) bool {
 	switch style.Kind {
 	case KindWord:
-		switch strings.TrimSpace(style.Text) {
-		case "break", "case", "const", "continue", "defer", "else", "fallthrough", "for", "func", "go", "goto", "if", "import", "package", "return", "select", "switch", "type", "var":
-			return false
-		default:
-			return true
-		}
+		return style.CanEndExpression
 	case KindLiteral, KindFragment, KindTypePrefix, KindCloseBracket, KindCloseParen, KindBlockClose, KindPostfixOperator:
-		return true
-	default:
-		return false
-	}
-}
-
-func isPrefixOperator(op string) bool {
-	switch op {
-	case "+", "-", "*", "&", "!", "^", "~", "<-":
 		return true
 	default:
 		return false

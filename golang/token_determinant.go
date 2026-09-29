@@ -14,7 +14,7 @@ import (
 
 // ID appends identifier text checked against the builder's accepted form to the token sequence. Render returns an error if arg is outside the builder's accepted identifier form.
 func (v *Tokens) ID(arg string) *Tokens {
-	*v = append(*v, &models.Keyword{D: arg, Verify: true})
+	*v = append(*v, identifier(arg))
 	return v
 }
 
@@ -28,7 +28,7 @@ func (v *Tokens) Pkg(arg string) *Tokens {
 	if len(arg) == 0 {
 		return v
 	}
-	*v = append(*v, &models.Raw{D: arg, Verify: true})
+	*v = append(*v, verifiedRawToken(arg))
 	return v.Op(".")
 }
 
@@ -39,7 +39,7 @@ func Pkg(arg string) *Tokens {
 
 // Type appends the type declaration keyword to the token sequence.
 func (v *Tokens) Type() *Tokens {
-	*v = append(*v, &models.Keyword{D: "type"})
+	*v = append(*v, keyword("type"))
 	return v
 }
 
@@ -50,7 +50,7 @@ func Type() *Tokens {
 
 // Var appends the var declaration keyword to the token sequence.
 func (v *Tokens) Var() *Tokens {
-	*v = append(*v, &models.Keyword{D: "var"})
+	*v = append(*v, keyword("var"))
 	return v
 }
 
@@ -61,7 +61,7 @@ func Var() *Tokens {
 
 // Const appends the const declaration keyword to the token sequence.
 func (v *Tokens) Const() *Tokens {
-	*v = append(*v, &models.Keyword{D: "const"})
+	*v = append(*v, keyword("const"))
 	return v
 }
 
@@ -83,7 +83,7 @@ func List(args ...types.Token) *Tokens {
 
 // Slice appends a slice type prefix to the token sequence.
 func (v *Tokens) Slice() *Tokens {
-	*v = append(*v, &models.Raw{D: "[]"})
+	*v = append(*v, rawToken("[]"))
 	return v
 }
 
@@ -94,7 +94,7 @@ func Slice() *Tokens {
 
 // Array appends an array type with the requested length to the token sequence. Render does not validate that n is a legal Go array length.
 func (v *Tokens) Array(n int) *Tokens {
-	*v = append(*v, &models.Raw{D: "[" + strconv.Itoa(n) + "]"})
+	*v = append(*v, rawToken("["+strconv.Itoa(n)+"]"))
 	return v
 }
 
@@ -118,10 +118,10 @@ func New(arg types.Token) *Tokens {
 // Make appends a make call for the requested type and sizes to the token sequence. A capacity argument is emitted only when cap is greater than len.
 func (v *Tokens) Make(arg types.Token, len, cap int) *Tokens {
 	args := make([]types.Token, 0, 3)
-	args = append(args, arg, &models.Raw{D: strconv.Itoa(len)})
+	args = append(args, arg, rawToken(strconv.Itoa(len)))
 
 	if cap > len {
-		args = append(args, &models.Raw{D: strconv.Itoa(cap)})
+		args = append(args, rawToken(strconv.Itoa(cap)))
 	}
 
 	return v.Join(&models.Letter{D: "make"}).

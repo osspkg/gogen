@@ -6,13 +6,12 @@
 package golang
 
 import (
-	"go.osspkg.com/gogen/internal/models"
 	"go.osspkg.com/gogen/types"
 )
 
 // Struct appends the struct type keyword to the token sequence.
 func (v *Tokens) Struct() *Tokens {
-	*v = append(*v, &models.Keyword{D: "struct"})
+	*v = append(*v, keyword("struct"))
 	return v
 }
 
@@ -23,7 +22,7 @@ func Struct() *Tokens {
 
 // Interface appends the interface type keyword to the token sequence.
 func (v *Tokens) Interface() *Tokens {
-	*v = append(*v, &models.Keyword{D: "interface"})
+	*v = append(*v, keyword("interface"))
 	return v
 }
 
@@ -34,7 +33,7 @@ func Interface() *Tokens {
 
 // Any appends the predeclared any type to the token sequence.
 func (v *Tokens) Any() *Tokens {
-	*v = append(*v, &models.Keyword{D: "any"})
+	*v = append(*v, keyword("any"))
 	return v
 }
 
@@ -45,7 +44,7 @@ func Any() *Tokens {
 
 // Nil appends the predeclared nil value to the token sequence.
 func (v *Tokens) Nil() *Tokens {
-	*v = append(*v, &models.Keyword{D: "nil"})
+	*v = append(*v, keyword("nil"))
 	return v
 }
 
@@ -56,7 +55,7 @@ func Nil() *Tokens {
 
 // Chan appends the chan type keyword to the token sequence.
 func (v *Tokens) Chan() *Tokens {
-	*v = append(*v, &models.Keyword{D: "chan"})
+	*v = append(*v, keyword("chan"))
 	return v
 }
 
@@ -67,7 +66,7 @@ func Chan() *Tokens {
 
 // Uint8 appends the predeclared uint8 type to the token sequence.
 func (v *Tokens) Uint8() *Tokens {
-	*v = append(*v, &models.Keyword{D: "uint8"})
+	*v = append(*v, keyword("uint8"))
 	return v
 }
 
@@ -78,7 +77,7 @@ func Uint8() *Tokens {
 
 // Uint16 appends the predeclared uint16 type to the token sequence.
 func (v *Tokens) Uint16() *Tokens {
-	*v = append(*v, &models.Keyword{D: "uint16"})
+	*v = append(*v, keyword("uint16"))
 	return v
 }
 
@@ -89,7 +88,7 @@ func Uint16() *Tokens {
 
 // Uint32 appends the predeclared uint32 type to the token sequence.
 func (v *Tokens) Uint32() *Tokens {
-	*v = append(*v, &models.Keyword{D: "uint32"})
+	*v = append(*v, keyword("uint32"))
 	return v
 }
 
@@ -100,7 +99,7 @@ func Uint32() *Tokens {
 
 // Uint64 appends the predeclared uint64 type to the token sequence.
 func (v *Tokens) Uint64() *Tokens {
-	*v = append(*v, &models.Keyword{D: "uint64"})
+	*v = append(*v, keyword("uint64"))
 	return v
 }
 
@@ -111,7 +110,7 @@ func Uint64() *Tokens {
 
 // Int8 appends the predeclared int8 type to the token sequence.
 func (v *Tokens) Int8() *Tokens {
-	*v = append(*v, &models.Keyword{D: "int8"})
+	*v = append(*v, keyword("int8"))
 	return v
 }
 
@@ -122,7 +121,7 @@ func Int8() *Tokens {
 
 // Int16 appends the predeclared int16 type to the token sequence.
 func (v *Tokens) Int16() *Tokens {
-	*v = append(*v, &models.Keyword{D: "int16"})
+	*v = append(*v, keyword("int16"))
 	return v
 }
 
@@ -133,7 +132,7 @@ func Int16() *Tokens {
 
 // Int32 appends the predeclared int32 type to the token sequence.
 func (v *Tokens) Int32() *Tokens {
-	*v = append(*v, &models.Keyword{D: "int32"})
+	*v = append(*v, keyword("int32"))
 	return v
 }
 
@@ -144,7 +143,7 @@ func Int32() *Tokens {
 
 // Int64 appends the predeclared int64 type to the token sequence.
 func (v *Tokens) Int64() *Tokens {
-	*v = append(*v, &models.Keyword{D: "int64"})
+	*v = append(*v, keyword("int64"))
 	return v
 }
 
@@ -155,7 +154,7 @@ func Int64() *Tokens {
 
 // Float32 appends the predeclared float32 type to the token sequence.
 func (v *Tokens) Float32() *Tokens {
-	*v = append(*v, &models.Keyword{D: "float32"})
+	*v = append(*v, keyword("float32"))
 	return v
 }
 
@@ -166,7 +165,7 @@ func Float32() *Tokens {
 
 // Float64 appends the predeclared float64 type to the token sequence.
 func (v *Tokens) Float64() *Tokens {
-	*v = append(*v, &models.Keyword{D: "float64"})
+	*v = append(*v, keyword("float64"))
 	return v
 }
 
@@ -177,7 +176,7 @@ func Float64() *Tokens {
 
 // Complex64 appends the predeclared complex64 type to the token sequence.
 func (v *Tokens) Complex64() *Tokens {
-	*v = append(*v, &models.Keyword{D: "complex64"})
+	*v = append(*v, keyword("complex64"))
 	return v
 }
 
@@ -188,7 +187,7 @@ func Complex64() *Tokens {
 
 // Complex128 appends the predeclared complex128 type to the token sequence.
 func (v *Tokens) Complex128() *Tokens {
-	*v = append(*v, &models.Keyword{D: "complex128"})
+	*v = append(*v, keyword("complex128"))
 	return v
 }
 
@@ -199,7 +198,7 @@ func Complex128() *Tokens {
 
 // Byte appends the predeclared byte alias to the token sequence.
 func (v *Tokens) Byte() *Tokens {
-	*v = append(*v, &models.Keyword{D: "byte"})
+	*v = append(*v, keyword("byte"))
 	return v
 }
 
@@ -210,7 +209,7 @@ func Byte() *Tokens {
 
 // Rune appends the predeclared rune alias to the token sequence.
 func (v *Tokens) Rune() *Tokens {
-	*v = append(*v, &models.Keyword{D: "rune"})
+	*v = append(*v, keyword("rune"))
 	return v
 }
 
@@ -221,7 +220,7 @@ func Rune() *Tokens {
 
 // Uint appends the predeclared uint type to the token sequence.
 func (v *Tokens) Uint() *Tokens {
-	*v = append(*v, &models.Keyword{D: "uint"})
+	*v = append(*v, keyword("uint"))
 	return v
 }
 
@@ -232,7 +231,7 @@ func Uint() *Tokens {
 
 // Int appends the predeclared int type to the token sequence.
 func (v *Tokens) Int() *Tokens {
-	*v = append(*v, &models.Keyword{D: "int"})
+	*v = append(*v, keyword("int"))
 	return v
 }
 
@@ -243,7 +242,7 @@ func Int() *Tokens {
 
 // Uintptr appends the predeclared uintptr type to the token sequence.
 func (v *Tokens) Uintptr() *Tokens {
-	*v = append(*v, &models.Keyword{D: "uintptr"})
+	*v = append(*v, keyword("uintptr"))
 	return v
 }
 
@@ -254,7 +253,7 @@ func Uintptr() *Tokens {
 
 // String appends the predeclared string type to the token sequence.
 func (v *Tokens) String() *Tokens {
-	*v = append(*v, &models.Keyword{D: "string"})
+	*v = append(*v, keyword("string"))
 	return v
 }
 
@@ -265,7 +264,7 @@ func String() *Tokens {
 
 // Bool appends the predeclared bool type to the token sequence.
 func (v *Tokens) Bool() *Tokens {
-	*v = append(*v, &models.Keyword{D: "bool"})
+	*v = append(*v, keyword("bool"))
 	return v
 }
 
@@ -276,7 +275,7 @@ func Bool() *Tokens {
 
 // Error appends the predeclared error interface to the token sequence.
 func (v *Tokens) Error() *Tokens {
-	*v = append(*v, &models.Keyword{D: "error"})
+	*v = append(*v, keyword("error"))
 	return v
 }
 
@@ -288,10 +287,10 @@ func Error() *Tokens {
 // Map appends a map type with the supplied key and value types to the token sequence.
 func (v *Tokens) Map(key, val types.Token) *Tokens {
 	return v.Join(
-		&models.Raw{D: "map["},
-		&models.Raw{T: key},
-		&models.Raw{D: "]"},
-		&models.Raw{T: val},
+		rawToken("map["),
+		rawTokenOf(key),
+		rawToken("]"),
+		rawTokenOf(val),
 	)
 }
 

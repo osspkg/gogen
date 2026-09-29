@@ -24,7 +24,7 @@ func (v *Comment[C]) Render(w io.Writer) error {
 		oc = v.c.CommentMulti()
 	}
 
-	if oc.Open == "//" && len(v.D) > 0 && v.D[0] != ' ' && v.D[0] != '\t' {
+	if oc.SpaceAfterOpenWhenNeeded && len(v.D) > 0 && v.D[0] != ' ' && v.D[0] != '\t' {
 		return gen.Render(w, oc.Open, " ", v.D, oc.Close)
 	}
 	return gen.Render(w, oc.Open, v.D, oc.Close)

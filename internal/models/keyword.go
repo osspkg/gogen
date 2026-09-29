@@ -7,23 +7,21 @@ package models
 
 import (
 	"fmt"
-	"io"
-	"regexp"
-
+	"go.osspkg.com/gogen/internal/config"
 	"go.osspkg.com/gogen/internal/gen"
+	"io"
 )
 
-type Keyword struct {
+type Keyword[C config.Config] struct {
+	C      C
 	Verify bool
 	Raw    bool
 	D      string
 }
 
-var rexLetter = regexp.MustCompile(`(?mUi)^[a-z][0-9a-z\_]{0,}$`)
-
-func (v *Keyword) Render(w io.Writer) error {
-	if v.Verify && !rexLetter.MatchString(v.D) {
-		return fmt.Errorf("invalid letter: %s", v.D)
+func (v *Keyword[C]) Render(w io.Writer) error {
+	if v.Verify && !v.C.IsIdentifier(v.D) {
+		return fmt.Errorf("invalid identifier: %s", v.D)
 	}
 	if v.Raw {
 		return gen.WriteVerbatim(w, v.D)
@@ -31,11 +29,15 @@ func (v *Keyword) Render(w io.Writer) error {
 	return gen.Render(w, v.D)
 }
 
-func (v *Keyword) RenderLayout() gen.Layout {
+func (v *Keyword[C]) RenderLayout() gen.Layout {
 	kind := gen.KindWord
 	if v.Raw {
 		kind = gen.KindFragment
 	}
-	style := gen.Style{Kind: kind, Text: v.D}
+	style := gen.Style{
+		Kind:             kind,
+		Text:             v.D,
+		CanEndExpression: v.C.CanEndExpression(v.D),
+	}
 	return gen.Layout{First: style, Last: style}
 }

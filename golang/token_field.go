@@ -6,14 +6,52 @@
 package golang
 
 import (
-	"go.osspkg.com/gogen/internal/models"
+	"io"
+
+	"go.osspkg.com/gogen/internal/gen"
 	"go.osspkg.com/gogen/types"
 )
+
+type structField struct {
+	name string
+	typ  types.Token
+	tags []string
+}
+
+func (v *structField) Render(w io.Writer) error {
+	parts, err := v.tokens()
+	if err != nil {
+		return err
+	}
+	return gen.Render(w, parts)
+}
+
+func (v *structField) RenderLayout() gen.Layout {
+	parts, err := v.tokens()
+	if err != nil {
+		return gen.Layout{}
+	}
+	return gen.LayoutOf(parts)
+}
+
+func (v *structField) tokens() ([]types.Token, error) {
+	tag, err := (config{}).structTag(v.tags)
+	if err != nil {
+		return nil, err
+	}
+
+	out := []types.Token{identifier(v.name)}
+	out = append(out, gen.Params(v.typ)...)
+	if tag != "" {
+		out = append(out, rawKeyword(tag))
+	}
+	return out, nil
+}
 
 // Field appends a named struct field with the supplied type. Tags are alternating
 // keys and values; rendering returns an error if their count is odd.
 func (v *Tokens) Field(name string, fieldType types.Token, tags ...string) *Tokens {
-	*v = append(*v, &models.StructField{Name: name, Type: fieldType, Tags: tags})
+	*v = append(*v, &structField{name: name, typ: fieldType, tags: tags})
 	return v
 }
 

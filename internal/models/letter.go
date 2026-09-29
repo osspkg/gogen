@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 
+	"go.osspkg.com/gogen/internal/config"
 	"go.osspkg.com/gogen/internal/gen"
 	"go.osspkg.com/gogen/types"
 )
@@ -30,16 +31,17 @@ func (v *Letter) RenderLayout() gen.Layout {
 	return gen.Layout{First: style, Last: style}
 }
 
-type Raw struct {
+type Raw[C config.Config] struct {
+	C      C
 	D      string
 	T      types.Token
 	AT     []types.Token
 	Verify bool
 }
 
-func (v *Raw) Render(w io.Writer) error {
-	if v.Verify && !rexLetter.MatchString(v.D) {
-		return fmt.Errorf("invalid letter: %s", v.D)
+func (v *Raw[C]) Render(w io.Writer) error {
+	if v.Verify && !v.C.IsIdentifier(v.D) {
+		return fmt.Errorf("invalid identifier: %s", v.D)
 	}
 	if err := gen.Render(w, v.D); err != nil {
 		return err
@@ -59,19 +61,20 @@ func (v *Raw) Render(w io.Writer) error {
 	return nil
 }
 
-func (v *Raw) RenderLayout() gen.Layout {
-	var style gen.Style
-	switch {
-	case v.Verify:
-		style = gen.Style{Kind: gen.KindWord, Text: v.D}
-	case v.D == "]":
-		style = gen.Style{Kind: gen.KindCloseBracket, Text: v.D}
-	case len(v.D) > 0 && (v.D[0] == '[' || v.D == "map["):
-		style = gen.Style{Kind: gen.KindTypePrefix, Text: v.D}
-	case v.D == "" && v.T != nil:
+func (v *Raw[C]) RenderLayout() gen.Layout {
+	if v.D == "" && v.T != nil {
 		return gen.LayoutOf([]types.Token{v.T})
-	default:
-		style = gen.Style{Kind: gen.KindFragment, Text: v.D}
+	}
+	kind := gen.KindFragment
+	if v.Verify {
+		kind = gen.KindWord
+	} else {
+		kind = layoutKind(v.C.RawKind(v.D, v.Verify))
+	}
+	style := gen.Style{
+		Kind:             kind,
+		Text:             v.D,
+		CanEndExpression: v.C.CanEndExpression(v.D),
 	}
 	return gen.Layout{First: style, Last: style}
 }

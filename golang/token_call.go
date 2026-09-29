@@ -11,7 +11,7 @@ import (
 )
 
 func (v *Tokens) __defer() *Tokens {
-	*v = append(*v, &models.Keyword{D: "defer"})
+	*v = append(*v, keyword("defer"))
 	return v
 }
 
@@ -21,7 +21,7 @@ func Defer() *Tokens {
 }
 
 func (v *Tokens) __go() *Tokens {
-	*v = append(*v, &models.Keyword{D: "go"})
+	*v = append(*v, keyword("go"))
 	return v
 }
 
@@ -53,7 +53,7 @@ func Call(args ...types.Token) *Tokens {
 
 // Func appends the func keyword to the token sequence.
 func (v *Tokens) Func() *Tokens {
-	*v = append(*v, &models.Keyword{D: "func"})
+	*v = append(*v, keyword("func"))
 	return v
 }
 
@@ -64,7 +64,7 @@ func Func() *Tokens {
 
 // Return appends the return keyword to the token sequence.
 func (v *Tokens) Return() *Tokens {
-	*v = append(*v, &models.Keyword{D: "return"})
+	*v = append(*v, keyword("return"))
 	return v
 }
 

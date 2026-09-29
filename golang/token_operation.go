@@ -22,7 +22,7 @@ func Op(arg string) *Tokens {
 
 // Raw appends the supplied source text without quoting or formatting to the token sequence. Use it when the text must be inserted verbatim.
 func (v *Tokens) Raw(arg string) *Tokens {
-	*v = append(*v, &models.Keyword{D: arg, Raw: true})
+	*v = append(*v, rawKeyword(arg))
 	return v
 }
 
@@ -33,7 +33,7 @@ func Raw(arg string) *Tokens {
 
 // Text appends a quoted Go string literal to the token sequence. Use it for string values that must be escaped as Go source.
 func (v *Tokens) Text(arg string) *Tokens {
-	*v = append(*v, &models.Text{D: arg})
+	*v = append(*v, textToken(arg))
 	return v
 }
 
