@@ -55,21 +55,42 @@ The module requires Go 1.26 or newer. Add the builder package from your module r
 go get go.osspkg.com/gogen/golang
 ```
 
-## Features and API
+## API reference
 
-Each package-level constructor starts a `*Tokens` sequence. Methods with the same names append to an existing sequence, so builders can be chained. `Join` combines token sequences.
+Package-level constructors such as `Func()` and `Text("hello")` create a `*Tokens` value. Fluent methods append to that sequence and return it, so expressions can be chained. `Join(tokens...)` appends existing token sequences. A few operations are intentionally fluent-only or package-only; those are called out below.
 
-| Area | Methods and constructors | Use |
-| --- | --- | --- |
-| File declarations | `Package`, `Import`, `ImportBlock` | Start a file and add one import or a grouped import declaration. |
-| Type declarations | `Type`, `TypeBlock`, `Struct`, `Interface`, `Field` | Declare named or grouped types, define struct/interface bodies, and add named struct fields. |
-| Variables and constants | `Var`, `Const` | Start variable and constant declarations. |
-| Functions and calls | `Func`, `Params`, `Bracket`, `Call`, `Return`, `Defer`, `Go` | Build function declarations, parameter lists, calls, and common function statements. |
-| Control flow | `If`, `Else`, `ElseIf`, `For`, `Range`, `Switch`, `Select`, `Case`, `Default`, `Break`, `Continue`, `Fallthrough`, `Goto` | Compose conditional statements, loops, and switch/select clauses. |
-| Expressions | `ID`, `Pkg`, `Op`, `Raw`, `Text`, `Index`, `TypeArgs`, `KeyValue`, `List`, `New`, `Make`, `Append` | Build identifiers, package selectors, operators, literals, indexing, generic arguments, and common built-in calls. |
-| Types | `Any`, `Nil`, `Chan`, `Map`, `Slice`, `Array`, `Bool`, `Byte`, `Rune`, `String`, `Error`, `Int`, `Int8`, `Int16`, `Int32`, `Int64`, `Uint`, `Uint8`, `Uint16`, `Uint32`, `Uint64`, `Uintptr`, `Float32`, `Float64`, `Complex64`, `Complex128` | Add predeclared Go types and map/slice/array type syntax. |
-| Layout and rendering | `Block`, `Comment`, `Line`, `Tokens.Render`, `Tokens.Unwrap`, `Tokens.Join`, `Render`, `SetRawMode`, `SetDefaultMode` | Add blocks and comments, inspect token output, combine tokens, and choose formatted or raw output. |
-| Custom tokens | `types.Token` | Implement `Render(io.Writer) error` to add a token renderer. |
+| Area | Fluent methods | Package-level constructors | Use |
+| --- | --- | --- | --- |
+| File and declarations | `Package`, `Import`, `ImportBlock`, `Type`, `TypeBlock`, `Var`, `Const` | `Package`, `Import`, `ImportBlock`, `Type`, `TypeBlock`, `Var`, `Const` | Start a package, add imports, and declare values or types. Group builders take declaration specs as tokens. |
+| Functions and statements | `Func`, `Return`, `If`, `Else`, `ElseIf`, `For`, `Range`, `Case`, `Default`, `Break`, `Continue`, `Fallthrough`, `Goto` | `Func`, `Return`, `Defer`, `Go`, `If`, `For`, `Switch`, `Select`, `Case`, `Default` | Compose function declarations and control-flow statements. `Defer`, `Go`, `Switch`, and `Select` have package-level constructors only; `Else`, `ElseIf`, `Range`, `Break`, `Continue`, `Fallthrough`, and `Goto` are fluent-only. |
+| Calls and lists | `Bracket`, `Call`, `List` | `Call`, `Params`, `List` | `Call` adds call parentheses; `Bracket` adds parentheses to an existing sequence; `Params` creates a parameter list; `List` creates a comma-separated sequence without delimiters. |
+| Expressions | `ID`, `Pkg`, `Op`, `Raw`, `Text`, `Index`, `TypeArgs`, `KeyValue` | `ID`, `Pkg`, `Op`, `Raw`, `Text`, `Index`, `TypeArgs`, `KeyValue` | Add identifiers, package selectors, operators, literals, indexes, generic arguments, and keyed composite-literal elements. |
+| Composite values and allocation | `New`, `Make`, `Append` | `New`, `Make`, `Append` | Build common `new`, `make`, and `append` calls. `Make` includes capacity only when it is greater than length. |
+| Types | `Any`, `Chan`, `Interface`, `Struct`, `Slice`, `Array`, `Map`, `Bool`, `Byte`, `Rune`, `String`, `Error`, `Int`, `Int8`, `Int16`, `Int32`, `Int64`, `Uint`, `Uint8`, `Uint16`, `Uint32`, `Uint64`, `Uintptr`, `Float32`, `Float64`, `Complex64`, `Complex128`, `Nil`, `Field` | Same names as fluent methods | Add predeclared types and common Go type forms. `Field(name, type, tags...)` adds a named struct field. |
+| Layout and rendering | `Block`, `Comment`, `Line`, `Join`, `Render`, `Unwrap` | `Block`, `Comment`, `Line` | Create indented blocks and comments, add line breaks, combine tokens, render readable token output, or access the underlying token slice. |
+| Package rendering | — | `Render`, `SetRawMode`, `SetDefaultMode` | Format a token with `go/format`, or switch the package-wide render mode. |
+
+`Tokens` is a slice-backed builder. `Unwrap()` returns its underlying slice without copying; changes to that slice are visible to the builder.
+
+### Grouped declarations
+
+Pass import specs as `Text(path)` or `ID(alias).Text(path)`. Pass each type declaration as a token sequence containing its name and type:
+
+```go
+file := gogen.Package("main").
+	ImportBlock(
+		gogen.Text("fmt"),
+		gogen.ID("json").Text("encoding/json"),
+	).
+	TypeBlock(
+		gogen.ID("Name").String(),
+		gogen.ID("Count").Int(),
+	)
+```
+
+`ImportBlock` and `TypeBlock` own the parentheses, line breaks, and indentation. Their specs do not include the `import` or `type` keyword.
+
+### Struct tags
 
 `Field` takes struct-tag key/value pairs and quotes the values for Go source:
 
@@ -89,9 +110,15 @@ struct {
 }
 ```
 
-Tag arguments must be key/value pairs; rendering returns an error when the argument count is odd. `Text` quotes a Go string literal. `Raw` inserts source text verbatim. `ID` validates identifier text and `Op` rejects unsupported operators during rendering.
+Tag arguments must be key/value pairs; rendering returns an error when the argument count is odd.
 
-`Tokens.Render(w)` writes readable token layout before formatting. `golang.Render(w, token)` applies `go/format` by default and returns syntax errors when the generated source is invalid; it does not type-check the program. `SetRawMode` and `SetDefaultMode` switch package-wide behavior for subsequent `Render` calls.
+### Rendering and errors
+
+`Tokens.Render(w)` writes readable token layout without calling `go/format`. `golang.Render(w, token)` applies `go/format` by default and returns rendering, formatting, or writer errors. Formatting checks syntax only; it does not type-check the generated program. `SetRawMode` and `SetDefaultMode` switch package-wide behavior for subsequent `Render` calls. Raw mode skips formatting, while `Raw` content is always inserted verbatim.
+
+`ID` validates identifier text against the builder's accepted form, and `Op` rejects unsupported Go operators during rendering. `Array(n)` emits the requested length without checking whether it is a legal Go array length.
+
+To add a custom token, implement the public [`types.Token`](types/token.go) interface. Its `Render(io.Writer) error` method should write source text and return writer or rendering errors.
 
 ## Contributing
 

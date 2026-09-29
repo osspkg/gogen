@@ -7,8 +7,8 @@ package types
 
 import "io"
 
-// Token is a value that can render Go source to a writer.
+// Token renders source text to a writer.
 type Token interface {
-	// Render writes the token's Go source to w and returns any write or render error.
+	// Render writes the token's source text to w and returns any write or render error.
 	Render(w io.Writer) error
 }
