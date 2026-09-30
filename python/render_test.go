@@ -104,6 +104,48 @@ func TestRenderContainersComprehensionsAndFString(t *testing.T) {
 	}
 }
 
+func TestRenderBuiltinTypes(t *testing.T) {
+	tests := []struct {
+		name  string
+		token types.Token
+		want  string
+	}{
+		{name: "any", token: py.Any(), want: "Any"},
+		{name: "bool", token: py.Bool(), want: "bool"},
+		{name: "bytes", token: py.Bytes(), want: "bytes"},
+		{name: "bytearray", token: py.ByteArray(), want: "bytearray"},
+		{name: "complex", token: py.Complex(), want: "complex"},
+		{name: "dict", token: py.DictType(py.String(), py.Int()), want: "dict[str, int]"},
+		{name: "float", token: py.Float(), want: "float"},
+		{name: "frozenset", token: py.FrozenSetType(py.Int()), want: "frozenset[int]"},
+		{name: "int", token: py.Int(), want: "int"},
+		{name: "list", token: py.ListType(py.String()), want: "list[str]"},
+		{name: "memoryview", token: py.MemoryView(), want: "memoryview"},
+		{name: "object", token: py.ObjectType(), want: "object"},
+		{name: "range", token: py.Range(), want: "range"},
+		{name: "set", token: py.SetType(py.Int()), want: "set[int]"},
+		{name: "tuple", token: py.TupleType(py.String(), py.Int()), want: "tuple[str, int]"},
+		{name: "variadic tuple", token: py.TupleType(py.Int(), py.Ellipsis()), want: "tuple[int, ...]"},
+		{name: "type", token: py.TypeType(), want: "type"},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := render(t, test.token); got != test.want {
+				t.Fatalf("render() = %q, want %q", got, test.want)
+			}
+		})
+	}
+
+	if got, want := render(t, py.DictType(py.String(), py.ListType(py.Int()))), "dict[str, list[int]]"; got != want {
+		t.Fatalf("nested generic type = %q, want %q", got, want)
+	}
+
+	got, want := render(t, py.ID("value").Colon().String()), "value: str"
+	if got != want {
+		t.Fatalf("chainable String() = %q, want %q", got, want)
+	}
+}
+
 func TestRenderEscapingOperatorsAndRaw(t *testing.T) {
 	if got, want := render(t, py.Text("quote: \"; slash: \\; line:\n")), "\"quote: \\\"; slash: \\\\; line:\\n\""; got != want {
 		t.Fatalf("string = %q, want %q", got, want)

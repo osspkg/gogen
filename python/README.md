@@ -75,9 +75,23 @@ py.If(py.ID("ready")).Block(py.Return().True()).Else().Block(py.Return().False()
 | `ListLiteral`, `TupleLiteral`, `SetLiteral`, `DictLiteral` | Build common collection literals. |
 | `ListComp`, `SetComp`, `DictComp`, `GeneratorExpr` | Build comprehensions with `ForClause`, `AsyncForClause`, and `IfClause`. |
 | `TypeUnion` | Compose Python 3.10 union annotations with `|`. |
+| `Int`, `Float`, `Complex`, `Bool`, `String`, `Str`, `Bytes`, `ByteArray`, `MemoryView`, `Range`, `ObjectType`, `TypeType`, `Any` | Emit scalar built-in types or `typing.Any`. |
+| `ListType`, `DictType`, `SetType`, `FrozenSetType`, `TupleType` | Emit PEP 585 generic container types. |
 | `NoneValue`, `True`, `False`, `Ellipsis` | Emit Python's built-in literal values. |
 
 `Text` and f-string text parts escape their respective string contexts. F-string expressions accept tokens; advanced conversion flags and format specifications can be composed with `Raw`.
+
+## Built-in types
+
+Use the type builders in annotations and generic expressions. They emit Python's built-in type names and PEP 585 forms such as `list[str]`, `dict[str, int]`, and `tuple[str, ...]`:
+
+```go
+py.Def("load_names").Bracket().Arrow().ListType(py.String()).Block(
+    py.Return().ListLiteral(py.Text("Ada")),
+)
+```
+
+`Int`, `Float`, `Complex`, `Bool`, `String`/`Str`, `Bytes`, `ByteArray`, `MemoryView`, `Range`, `ObjectType`, and `TypeType` represent scalar or non-parameterized built-ins. Use `ListType`, `DictType`, `SetType`, `FrozenSetType`, and `TupleType` for generic containers. `TupleType()` without arguments emits bare `tuple`; `TupleType(py.Int(), py.Ellipsis())` emits `tuple[int, ...]`. `Any()` emits `Any` and expects the generated module to import it from `typing`. For `None`, use `NoneValue()`; unions can be composed with `TypeUnion`.
 
 ## Builder reference
 
@@ -87,7 +101,7 @@ Builders can generally be used as package-level functions or as chainable `*Toke
 | --- | --- |
 | Imports and declarations | `Import`, `ImportAs`, `FromImport`, `Decorator`, `Def`, `AsyncDef`, `Class` |
 | Control and statements | `If`, `Elif`, `Else`, `ForEach`, `AsyncForEach`, `While`, `With`, `AsyncWith`, `Try`, `Except`, `Finally`, `Match`, `Case`, `Return`, `Yield`, `Raise`, `Pass`, `Break`, `Continue`, `Assert`, `Del`, `Global`, `Nonlocal`, `Await`, `As` |
-| Expressions and values | `ID`, `Raw`, `Text`, `Op`, `Call`, `Bracket`, `List`, `Index`, `KeyValue`, `Selector`, `Pkg`, `TupleLiteral`, `TypeUnion`, `ListLiteral`, `DictLiteral`, `SetLiteral`, `ListComp`, `SetComp`, `DictComp`, `GeneratorExpr`, `FString`, `NoneValue`, `True`, `False`, `Ellipsis` |
+| Expressions and values | `ID`, `Raw`, `Text`, `Op`, `Call`, `Bracket`, `List`, `Index`, `KeyValue`, `Selector`, `Pkg`, `TupleLiteral`, `TypeUnion`, `Int`, `Float`, `Complex`, `Bool`, `String`, `Str`, `Bytes`, `ByteArray`, `MemoryView`, `Range`, `ObjectType`, `TypeType`, `Any`, `ListType`, `DictType`, `SetType`, `FrozenSetType`, `TupleType`, `ListLiteral`, `DictLiteral`, `SetLiteral`, `ListComp`, `SetComp`, `DictComp`, `GeneratorExpr`, `FString`, `NoneValue`, `True`, `False`, `Ellipsis` |
 | Layout and output | `Block`, `Comment`, `Line`, `Join`, `Render`, `Unwrap` |
 
 ## Errors and custom tokens
