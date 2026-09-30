@@ -22,10 +22,11 @@ func main() {
     file := py.FromImport("dataclasses", py.ID("dataclass")).Line().Join(
         py.Decorator(py.ID("dataclass")),
         py.Class("User").Block(
-            py.ID("name").Colon().ID("str"),
-            py.ID("active").Colon().ID("bool").Op("=").True(),
+            py.ID("name").Colon().String(),
+            py.ID("active").Colon().Bool().Op("=").True(),
         ),
-        py.AsyncDef("load_user").Bracket(py.ID("user_id").Colon().ID("int")).Arrow().TypeUnion(py.ID("User"), py.NoneValue()).Block(
+    ).Line().Join(
+        py.AsyncDef("load_user").Bracket(py.ID("user_id").Colon().Int()).Arrow().TypeUnion(py.ID("User"), py.NoneValue()).Block(
             py.If(py.ID("user_id").Op("<").Raw("0")).Block(py.Return().NoneValue()),
             py.Return().Await().ID("repository").Selector("load").Call(py.ID("user_id")),
         ),
@@ -43,7 +44,6 @@ The rendered source uses four spaces for each suite level:
 
 ```python
 from dataclasses import dataclass
-
 @dataclass
 class User:
     name: str
@@ -75,7 +75,7 @@ py.If(py.ID("ready")).Block(py.Return().True()).Else().Block(py.Return().False()
 | `ListLiteral`, `TupleLiteral`, `SetLiteral`, `DictLiteral` | Build common collection literals. |
 | `ListComp`, `SetComp`, `DictComp`, `GeneratorExpr` | Build comprehensions with `ForClause`, `AsyncForClause`, and `IfClause`. |
 | `TypeUnion` | Compose Python 3.10 union annotations with `|`. |
-| `Int`, `Float`, `Complex`, `Bool`, `String`, `Str`, `Bytes`, `ByteArray`, `MemoryView`, `Range`, `ObjectType`, `TypeType`, `Any` | Emit scalar built-in types or `typing.Any`. |
+| `Int`, `Float`, `Complex`, `Bool`, `String`, `Str`, `Bytes`, `ByteArray`, `MemoryView`, `Range`, `ObjectType`, `TypeType`, `Any` | Emit built-in types; `Any` emits the name from `typing`. |
 | `ListType`, `DictType`, `SetType`, `FrozenSetType`, `TupleType` | Emit PEP 585 generic container types. |
 | `NoneValue`, `True`, `False`, `Ellipsis` | Emit Python's built-in literal values. |
 
@@ -91,18 +91,25 @@ py.Def("load_names").Bracket().Arrow().ListType(py.String()).Block(
 )
 ```
 
-`Int`, `Float`, `Complex`, `Bool`, `String`/`Str`, `Bytes`, `ByteArray`, `MemoryView`, `Range`, `ObjectType`, and `TypeType` represent scalar or non-parameterized built-ins. Use `ListType`, `DictType`, `SetType`, `FrozenSetType`, and `TupleType` for generic containers. `TupleType()` without arguments emits bare `tuple`; `TupleType(py.Int(), py.Ellipsis())` emits `tuple[int, ...]`. `Any()` emits `Any` and expects the generated module to import it from `typing`. For `None`, use `NoneValue()`; unions can be composed with `TypeUnion`.
+`Int`, `Float`, `Complex`, `Bool`, `String`/`Str`, `Bytes`, `ByteArray`, `MemoryView`, `Range`, `ObjectType`, and `TypeType` emit built-in type names. Use `ListType`, `DictType`, `SetType`, `FrozenSetType`, and `TupleType` for generic containers. `TupleType()` without arguments emits bare `tuple`; `TupleType(py.Int(), py.Ellipsis())` emits `tuple[int, ...]`. `Any()` emits `Any` and expects the generated module to import it from `typing`. For `None`, use `NoneValue()`; unions can be composed with `TypeUnion`.
 
 ## Builder reference
 
-Builders can generally be used as package-level functions or as chainable `*Tokens` methods. `FStringText`, `FStringExpr`, `ForClause`, `AsyncForClause`, `IfClause`, and `KeyValue` are component constructors returning `types.Token`.
+Package-level constructors and chainable `*Tokens` methods are available unless the table identifies a component token. Component constructors return `types.Token`; use them as arguments to the parent builder.
 
-| Area | Builders |
-| --- | --- |
-| Imports and declarations | `Import`, `ImportAs`, `FromImport`, `Decorator`, `Def`, `AsyncDef`, `Class` |
-| Control and statements | `If`, `Elif`, `Else`, `ForEach`, `AsyncForEach`, `While`, `With`, `AsyncWith`, `Try`, `Except`, `Finally`, `Match`, `Case`, `Return`, `Yield`, `Raise`, `Pass`, `Break`, `Continue`, `Assert`, `Del`, `Global`, `Nonlocal`, `Await`, `As` |
-| Expressions and values | `ID`, `Raw`, `Text`, `Op`, `Call`, `Bracket`, `List`, `Index`, `KeyValue`, `Selector`, `Pkg`, `TupleLiteral`, `TypeUnion`, `Int`, `Float`, `Complex`, `Bool`, `String`, `Str`, `Bytes`, `ByteArray`, `MemoryView`, `Range`, `ObjectType`, `TypeType`, `Any`, `ListType`, `DictType`, `SetType`, `FrozenSetType`, `TupleType`, `ListLiteral`, `DictLiteral`, `SetLiteral`, `ListComp`, `SetComp`, `DictComp`, `GeneratorExpr`, `FString`, `NoneValue`, `True`, `False`, `Ellipsis` |
-| Layout and output | `Block`, `Comment`, `Line`, `Join`, `Render`, `Unwrap` |
+| Area | Builders | Notes |
+| --- | --- | --- |
+| Imports and declarations | `Import`, `ImportAs`, `FromImport`, `Decorator`, `Def`, `AsyncDef`, `Class` | Build imports, decorators, function headers, and class headers. |
+| Control flow | `If`, `Elif`, `Else`, `ForEach`, `AsyncForEach`, `While`, `With`, `AsyncWith`, `Try`, `Except`, `Finally`, `Match`, `Case` | Append `Block` to a header to emit its suite. |
+| Statements and syntax | `Return`, `Yield`, `Raise`, `Pass`, `Break`, `Continue`, `Assert`, `Del`, `Global`, `Nonlocal`, `Await`, `As`, `Arrow`, `Colon`, `Comma` | Compose statements, async expressions, annotations, aliases, and punctuation. |
+| Identifiers and expressions | `ID`, `Pkg`, `Selector`, `Raw`, `Text`, `Op`, `Call`, `Bracket`, `Index`, `List`, `KeyValue`, `TypeUnion` | `Raw` writes source verbatim; `Text` escapes a Python string literal. `List` is a comma-separated sequence without delimiters. |
+| Built-in types | `Any`, `Int`, `Float`, `Complex`, `Bool`, `String`, `Str`, `Bytes`, `ByteArray`, `MemoryView`, `Range`, `ObjectType`, `TypeType` | `Any` emits `typing.Any`; generated modules must import it. `String` and `Str` both emit `str`. |
+| Generic types | `ListType`, `DictType`, `SetType`, `FrozenSetType`, `TupleType` | Emit Python 3.10-compatible PEP 585 annotations. |
+| Collection values | `ListLiteral`, `TupleLiteral`, `SetLiteral`, `DictLiteral` | Build list, tuple, set, and dictionary expressions. |
+| Comprehensions | `ListComp`, `SetComp`, `DictComp`, `GeneratorExpr` | Combine with the component constructors `ForClause`, `AsyncForClause`, and `IfClause`. |
+| F-strings and values | `FString`, `NoneValue`, `True`, `False`, `Ellipsis` | `FStringText` and `FStringExpr` create f-string parts; they return `types.Token`. |
+| Layout and output | `Block`, `Comment`, `Line`, `Join`, `Render`, `Unwrap` | `Block` emits a colon and an indented suite; `Line` adds an explicit top-level line break. |
+
 
 ## Errors and custom tokens
 

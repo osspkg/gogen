@@ -1,6 +1,6 @@
 # gogen
 
-[![Go Version](https://img.shields.io/github/go-mod/go-version/osspkg/gogen)](https://go.dev/) [![License](https://img.shields.io/github/license/osspkg/gogen)](LICENSE) [![CI](https://img.shields.io/github/actions/workflow/status/osspkg/gogen/ci.yml?branch=master&label=CI)](https://github.com/osspkg/gogen/actions/workflows/ci.yml) [![Go Reference](https://pkg.go.dev/badge/go.osspkg.com/gogen/golang.svg)](https://pkg.go.dev/go.osspkg.com/gogen/golang) [![TypeScript Reference](https://pkg.go.dev/badge/go.osspkg.com/gogen/typescript.svg)](https://pkg.go.dev/go.osspkg.com/gogen/typescript)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/osspkg/gogen)](https://go.dev/) [![License](https://img.shields.io/github/license/osspkg/gogen)](LICENSE) [![CI](https://img.shields.io/github/actions/workflow/status/osspkg/gogen/ci.yml?branch=master&label=CI)](https://github.com/osspkg/gogen/actions/workflows/ci.yml) [![Go Reference](https://pkg.go.dev/badge/go.osspkg.com/gogen/golang.svg)](https://pkg.go.dev/go.osspkg.com/gogen/golang) [![TypeScript Reference](https://pkg.go.dev/badge/go.osspkg.com/gogen/typescript.svg)](https://pkg.go.dev/go.osspkg.com/gogen/typescript) [![Python Reference](https://pkg.go.dev/badge/go.osspkg.com/gogen/python.svg)](https://pkg.go.dev/go.osspkg.com/gogen/python)
 
 `gogen` is a token-based source generation library for Go, TypeScript, TSX, and Python. Language adapters provide composable builders while shared internals handle reusable token rendering and layout.
 

@@ -92,15 +92,16 @@ Use `JSXFragment(children...)` for a fragment. An element with no children is re
 
 ## Builder reference
 
-Builders are available both as package-level functions and as chainable `*Tokens` methods, except where noted. `TemplateText` and `TemplateExpr` return tokens to pass to `Template`; `From` is fluent-only.
+Builders are available both as package-level functions and as chainable `*Tokens` methods, except where noted. `TemplateText` and `TemplateExpr` return tokens to pass to `Template`.
 
 | Area | Builders | Notes |
 | --- | --- | --- |
-| Modules | `Import`, `ImportType`, `ImportNames`, `ImportNamespace`, `Export`, `ExportDefault`, `ExportNames`, `ExportFrom`, `From` | Supports side-effect, default, named, namespace, type-only, and re-export declarations. Use `ID(name).As().ID(alias)` for aliases. |
+| Modules | `Import`, `ImportType`, `ImportNames`, `ImportNamespace`, `Export`, `ExportDefault`, `ExportNames`, `ExportFrom`, `From` | `From` is fluent-only. Supports side-effect, default, named, namespace, type-only, and re-export declarations. Use `ID(name).As().ID(alias)` for aliases. |
 | Declarations | `Const`, `Let`, `Var`, `Function`, `Type`, `Interface`, `Class`, `Namespace`, `Async`, `Await`, `Return`, `Throw`, `Extends`, `Implements`, `New`, `This` | Compose declarations and common statement keywords. Use `Bracket` for parameters, `Colon` for annotations, and `Block` for bodies. |
 | Class modifiers | `Public`, `Private`, `Protected`, `Static`, `Readonly`, `Abstract`, `Override`, `Constructor` | Compose common class members and constructors. |
-| Control flow | `If`, `Else`, `ElseIf`, `For`, `ForOf`, `ForIn`, `While`, `Do`, `Switch`, `Case`, `Default`, `Break`, `Continue`, `Try`, `Catch`, `Finally` | `ForOf` and `ForIn` create loops with a `const` binding. |
-| Expressions | `ID`, `Raw`, `Text`, `Op`, `Call`, `Bracket`, `List`, `Index`, `TypeArgs`, `Selector`, `OptionalChain`, `NewCall`, `KeyValue`, `Spread`, `Arrow`, `As`, `Optional`, `NonNull` | `Text` creates an escaped string literal; `Raw` inserts caller-provided source verbatim. |
+| Control flow | `If`, `Else`, `ElseIf`, `For`, `ForOf`, `ForIn`, `While`, `Do`, `Switch`, `Case`, `Default`, `Break`, `Continue`, `Try`, `Catch`, `Finally`, `Of` | `ForOf` and `ForIn` create loops with a `const` binding. |
+| Expressions | `ID`, `Pkg`, `Raw`, `Text`, `Op`, `Call`, `Bracket`, `List`, `Index`, `TypeArgs`, `Selector`, `OptionalChain`, `NewCall`, `KeyValue`, `Spread`, `Arrow`, `As`, `Optional`, `NonNull` | `Text` creates an escaped string literal; `Raw` inserts caller-provided source verbatim. |
+| Punctuation | `Comma`, `Colon`, `Semicolon` | Append the corresponding syntax separators. |
 | Values and types | `ObjectLiteral`, `ArrayLiteral`, `Template`, `TemplateText`, `TemplateExpr`, `Any`, `Unknown`, `Never`, `Void`, `String`, `Number`, `Boolean`, `BigInt`, `Symbol`, `ObjectType`, `Null`, `Undefined`, `True`, `False`, `ArrayType`, `RecordType`, `MapType`, `SetType`, `PromiseType`, `Union`, `Intersection` | Compose object/array values, template strings, primitive and utility types, and unions or intersections. |
 | TSX | `JSXElement`, `JSXFragment`, `JSXAttribute`, `JSXAttributeExpr`, `JSXBooleanAttribute`, `JSXSpreadAttribute`, `JSXText`, `JSXExpr` | Build elements, fragments, attributes, text nodes, and expression children. |
 | Layout and output | `Block`, `Comment`, `Line`, `Join`, `Render`, `Unwrap` | Set explicit layout, combine token sequences, render source, or access the underlying token slice. |
@@ -111,4 +112,4 @@ Rendering returns errors from the destination writer and from invalid builder in
 
 `Raw(source)` writes the supplied source verbatim. It does not parse or validate it, so keep raw input under the caller's control. `Text(value)` emits an escaped JavaScript string literal; `JSXText(value)` and `JSXAttribute(name, value)` escape literal values for their JSX contexts.
 
-For the repository overview and Go adapter reference, see the [root README](../README.md). The package's exported symbols are also documented on [pkg.go.dev](https://pkg.go.dev/go.osspkg.com/gogen/typescript).
+For the repository overview and other language guides, see the [root README](../README.md), [Go guide](../golang/README.md), and [Python guide](../python/README.md). The package's exported symbols are also documented on [pkg.go.dev](https://pkg.go.dev/go.osspkg.com/gogen/typescript).

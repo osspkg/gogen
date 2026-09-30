@@ -135,4 +135,4 @@ Rendering returns errors from tokens or the destination writer. With formatting 
 
 To provide a custom token, implement [`types.Token`](../types/token.go) and write its source in `Render(io.Writer) error`.
 
-For the repository overview and TypeScript adapter guide, see the [root README](../README.md) and [TypeScript guide](../typescript/README.md). The Go package reference is available on [pkg.go.dev](https://pkg.go.dev/go.osspkg.com/gogen/golang).
+For the repository overview and other language guides, see the [root README](../README.md), [TypeScript/TSX guide](../typescript/README.md), and [Python guide](../python/README.md). The Go package reference is available on [pkg.go.dev](https://pkg.go.dev/go.osspkg.com/gogen/golang).

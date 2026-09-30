@@ -3,10 +3,12 @@
 ## Project map
 
 - `golang/` contains the Go-language fluent API, Go formatter, and Go syntax policy in `golang/config.go`.
+- `typescript/` contains the TypeScript and TSX fluent API and language policy.
+- `python/` contains the Python 3.10+ fluent API, built-in type builders, and language policy.
 - `types/` defines the public `Token` interface.
 - `internal/gen/` walks token values and applies language-neutral layout rules to semantic token styles.
 - `internal/models/` implements reusable token renderers. `internal/config/` defines the language policy contract; language-specific rules belong in the corresponding language package, never as literals or branches in `internal/`.
-- `README.md` documents installation and public API usage. Keep examples consistent with the constructors in `golang/`.
+- `README.md` links the language-specific API guides in `golang/`, `typescript/`, and `python/`. Keep examples consistent with each adapter’s exported constructors.
 
 ## Working in this repository
 
@@ -14,8 +16,8 @@
 - Preserve the boundary between language packages and reusable `internal` packages. Keep keyword inventories, identifier rules, literal quoting, operator classification, and comment styles in the language package config.
 - Extend `internal/config.Config` only with language-neutral capabilities needed by multiple language adapters. Do not add branches for Go (or another target language) to `internal/gen` or `internal/models`.
 - Token implementations satisfy `types.Token` by rendering to an `io.Writer`; propagate writer and render errors.
-- `golang.Render` formats output by default. `SetRawMode` and `SetDefaultMode` change package-wide rendering behavior; account for that shared state when changing rendering code.
-- `ID` and `Op` validate against rules in the Go builder. Update focused examples or tests when changing those rules or exported constructors.
+- `golang.Render` formats output by default. `SetRawMode` and `SetDefaultMode` change package-wide Go rendering behavior; account for that shared state when changing Go rendering code. TypeScript and Python render readable source directly, without formatters. Python targets 3.10+ and indents suites with four spaces.
+- Each adapter’s `ID` and `Op` validate against its own language rules. Update focused examples or tests when changing validation or exported constructors.
 
 ## Persistent project memory
 
