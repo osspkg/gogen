@@ -7,15 +7,21 @@ package models
 
 import (
 	"io"
-	"strconv"
 
+	"go.osspkg.com/gogen/internal/config"
 	"go.osspkg.com/gogen/internal/gen"
 )
 
-type Text struct {
+type Text[C config.Config] struct {
+	C C
 	D string
 }
 
-func (v *Text) Render(w io.Writer) error {
-	return gen.Render(w, strconv.Quote(v.D))
+func (v *Text[C]) Render(w io.Writer) error {
+	return gen.Render(w, v.C.QuoteString(v.D))
+}
+
+func (v *Text[C]) RenderLayout() gen.Layout {
+	style := gen.Style{Kind: gen.KindLiteral, Text: v.D}
+	return gen.Layout{First: style, Last: style}
 }

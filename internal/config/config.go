@@ -5,12 +5,38 @@
 
 package config
 
+type TokenKind uint8
+
+const (
+	TokenDefault TokenKind = iota
+	TokenDot
+	TokenComma
+	TokenColon
+	TokenSemicolon
+	TokenOpenParen
+	TokenCloseParen
+	TokenOpenSquare
+	TokenCloseSquare
+	TokenBlockOpen
+	TokenBlockClose
+	TokenTypePrefix
+	TokenPrefixOperator
+	TokenPostfixOperator
+)
+
 type Config interface {
 	CommentSingle() OpenClose
 	CommentMulti() OpenClose
 	OperationAvailable(op string) bool
+	OperationKind(op string) TokenKind
+	RawKind(text string, verified bool) TokenKind
+	IsIdentifier(text string) bool
+	CanEndExpression(word string) bool
+	QuoteString(text string) string
 }
 
 type OpenClose struct {
-	Open, Close string
+	Open                     string
+	Close                    string
+	SpaceAfterOpenWhenNeeded bool
 }

@@ -7,6 +7,8 @@ package types
 
 import "io"
 
+// Token renders source text to a writer.
 type Token interface {
+	// Render writes the token's source text to w and returns any write or render error.
 	Render(w io.Writer) error
 }

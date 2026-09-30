@@ -20,14 +20,17 @@ import (
 
 var rawMode = atomic.Bool{}
 
+// SetRawMode disables go/format for subsequent Render calls.
 func SetRawMode() {
 	rawMode.Store(true)
 }
 
+// SetDefaultMode enables go/format for subsequent Render calls.
 func SetDefaultMode() {
 	rawMode.Store(false)
 }
 
+// Render writes arg to w and formats the generated source with go/format unless raw mode is enabled. It returns render, formatting, or writer errors.
 func Render(w io.Writer, arg types.Token) error {
 	buf := bytes.NewBuffer(nil)
 

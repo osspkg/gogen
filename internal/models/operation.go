@@ -25,4 +25,7 @@ func (v *Operation[C]) Render(w io.Writer) error {
 	return gen.Render(w, v.D)
 }
 
-func (v *Operation[C]) NoSpace() {}
+func (v *Operation[C]) RenderLayout() gen.Layout {
+	style := gen.Style{Kind: layoutKind(v.c.OperationKind(v.D)), Text: v.D}
+	return gen.Layout{First: style, Last: style}
+}
