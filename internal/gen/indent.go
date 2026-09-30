@@ -11,16 +11,23 @@ import (
 )
 
 type IndentWriter struct {
-	w         io.Writer
-	indent    int
-	lineStart bool
+	w          io.Writer
+	indent     int
+	indentText string
+	lineStart  bool
 }
 
 func Indented(w io.Writer) *IndentWriter {
+	return IndentedWith(w, "\t")
+}
+
+// IndentedWith returns a writer that prefixes each indented line with indentText.
+// If w is already an IndentWriter, it reuses that writer and its indentation.
+func IndentedWith(w io.Writer, indentText string) *IndentWriter {
 	if indented, ok := w.(*IndentWriter); ok {
 		return indented
 	}
-	return &IndentWriter{w: w}
+	return &IndentWriter{w: w, indentText: indentText}
 }
 
 func (w *IndentWriter) Push() {
@@ -50,11 +57,11 @@ func (w *IndentWriter) Write(p []byte) (int, error) {
 	for consumed < len(p) {
 		if w.lineStart && p[consumed] != '\n' {
 			for i := 0; i < w.indent; i++ {
-				n, err := io.WriteString(w.w, "\t")
+				n, err := io.WriteString(w.w, w.indentText)
 				if err != nil {
 					return consumed, err
 				}
-				if n != 1 {
+				if n != len(w.indentText) {
 					return consumed, io.ErrShortWrite
 				}
 			}
@@ -88,11 +95,11 @@ func WriteVerbatim(w io.Writer, text string) error {
 	if indented, ok := w.(*IndentWriter); ok {
 		if indented.lineStart && text != "" && text[0] != '\n' {
 			for i := 0; i < indented.indent; i++ {
-				n, err := io.WriteString(indented.w, "\t")
+				n, err := io.WriteString(indented.w, indented.indentText)
 				if err != nil {
 					return err
 				}
-				if n != 1 {
+				if n != len(indented.indentText) {
 					return io.ErrShortWrite
 				}
 			}

@@ -65,11 +65,9 @@ func (v *Raw[C]) RenderLayout() gen.Layout {
 	if v.D == "" && v.T != nil {
 		return gen.LayoutOf([]types.Token{v.T})
 	}
-	kind := gen.KindFragment
+	kind := layoutKind(v.C.RawKind(v.D, v.Verify))
 	if v.Verify {
 		kind = gen.KindWord
-	} else {
-		kind = layoutKind(v.C.RawKind(v.D, v.Verify))
 	}
 	style := gen.Style{
 		Kind:             kind,

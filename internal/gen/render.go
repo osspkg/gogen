@@ -1,6 +1,6 @@
 /*
  *  Copyright (c) 2025-2026 Mikhail Knyazhev <markus621@yandex.com>. All rights reserved.
- *  Use of this source code is governed by the BSD 3-Clause license that can be found in the LICENSE file.
+ *  Use of this source code is governed by a BSD 3-Clause license that can be found in the LICENSE file.
  */
 
 package gen
@@ -105,20 +105,8 @@ func layoutOf(token types.Token) Layout {
 }
 
 func separator(previous, next Style) string {
-	if previous.Kind == KindLine || next.Kind == KindLine || previous.Kind == KindComment {
+	if noSeparator(previous, next) {
 		return ""
-	}
-	if next.Kind == KindComma || next.Kind == KindDot || next.Kind == KindColon || next.Kind == KindSemicolon || next.Kind == KindCloseParen || next.Kind == KindCloseBracket {
-		return ""
-	}
-	if previous.Kind == KindDot || previous.Kind == KindOpenParen || previous.Kind == KindOpenSquare || previous.Kind == KindTypePrefix || previous.Kind == KindCloseBracket {
-		return ""
-	}
-	if next.Kind == KindOpenParen || next.Kind == KindOpenSquare {
-		return ""
-	}
-	if next.Kind == KindBlockOpen {
-		return " "
 	}
 	if previous.Kind == KindBlockOpen {
 		return ""
@@ -126,10 +114,7 @@ func separator(previous, next Style) string {
 	if previous.Kind == KindComma || previous.Kind == KindColon || previous.Kind == KindOperator {
 		return " "
 	}
-	if previous.Kind == KindPrefixOperator {
-		return ""
-	}
-	if previous.Kind == KindPostfixOperator {
+	if previous.Kind == KindPrefixOperator || previous.Kind == KindPostfixOperator {
 		return ""
 	}
 	if next.Kind == KindOperator {
@@ -141,16 +126,26 @@ func separator(previous, next Style) string {
 	if next.Kind == KindPostfixOperator {
 		return ""
 	}
-	if previous.Kind == KindCloseParen || previous.Kind == KindCloseBracket || previous.Kind == KindBlockClose {
-		return " "
-	}
-	if wordLikeKind(previous.Kind) && wordLikeKind(next.Kind) {
-		return " "
-	}
-	if next.Kind == KindSemicolon || previous.Kind == KindSemicolon {
-		return " "
-	}
 	return " "
+}
+
+func noSeparator(previous, next Style) bool {
+	return previous.Kind == KindLine ||
+		next.Kind == KindLine ||
+		previous.Kind == KindComment ||
+		next.Kind == KindComma ||
+		next.Kind == KindDot ||
+		next.Kind == KindColon ||
+		next.Kind == KindSemicolon ||
+		next.Kind == KindCloseParen ||
+		next.Kind == KindCloseBracket ||
+		previous.Kind == KindDot ||
+		previous.Kind == KindOpenParen ||
+		previous.Kind == KindOpenSquare ||
+		previous.Kind == KindTypePrefix ||
+		previous.Kind == KindCloseBracket ||
+		next.Kind == KindOpenParen ||
+		next.Kind == KindOpenSquare
 }
 
 func wordLike(style Style) string {

@@ -7,9 +7,10 @@ package models
 
 import (
 	"fmt"
+	"io"
+
 	"go.osspkg.com/gogen/internal/config"
 	"go.osspkg.com/gogen/internal/gen"
-	"io"
 )
 
 type Keyword[C config.Config] struct {

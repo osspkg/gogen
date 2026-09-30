@@ -42,3 +42,8 @@ func layoutKind(kind config.TokenKind) gen.Kind {
 		return gen.KindOperator
 	}
 }
+
+// LayoutKind converts a language-neutral token category into its renderer style.
+func LayoutKind(kind config.TokenKind) gen.Kind {
+	return layoutKind(kind)
+}
